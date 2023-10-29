@@ -94,7 +94,14 @@ public class Model {
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
 
-
+        if(b.size() == 0) return true;
+        for(int col = 0; col <= b.size() -1; col++){
+            for(int row = 0; row <= b.size()-1; row++){
+                if(b.tile(col, row) == null) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -104,8 +111,15 @@ public class Model {
      * given a Tile object t, we get its value with t.value().
      */
     public static boolean maxTileExists(Board b) {
-        // TODO: Fill in this function.
-
+        // TODO: Fill in this function
+        int MAX_PIECE = 2048;
+        for(int col = 0; col <= b.size()-1; col++){
+            for(int row = 0; row <= b.size()-1; row++){
+                if(b.tile(col, row) != null && b.tile(col, row).value() == MAX_PIECE){
+                    return true;
+                }
+            }
+        }
 
         return false;
     }
@@ -118,8 +132,23 @@ public class Model {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
-
-
+        if(emptySpaceExists(b)) return true;
+        int size = b.size();
+        int[] directionsCol = {0,1,0,-1};
+        int[] directionsRow = {1,0,-1,0};
+        for(int i=0; i<size; i++){
+            for(int j=0; j<size; j++){
+                for(int k=0; k<4; k++){
+                    int newCol = i+directionsCol[k];
+                    int newRow = j+directionsRow[k];
+                    if(newCol < size && newCol >0 && newRow >0 && newRow < size){
+                        if(b.tile(i,j).value() == b.tile(newCol,newRow).value()){
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
         return false;
     }
 
@@ -138,9 +167,60 @@ public class Model {
     public void tilt(Side side) {
         // TODO: Modify this.board (and if applicable, this.score) to account
         // for the tilt to the Side SIDE.
+        boolean change = false;
+        board.setViewingPerspective(side);
 
 
+        for(int col = 0; col <= board.size()-1; col++){
+            // 1. move non-empty tile in order
+            //  [x,2,2,x] --> [2,2,x,x]
+            // note: find the null tile where there is a non-null tile in the next row
+
+            for(int row = board.size()-1; row>=0; row--){
+                Tile t = board.tile(col, row);
+                if(t != null) {
+                    int nextPosition = board.size() - 1;
+                    while (nextPosition >= 0) {
+                        if (board.tile(col, nextPosition) == null) {
+                            break;
+                        }
+                        nextPosition--;
+                    }
+
+                    if (nextPosition >= row) {
+                        board.move(col, nextPosition, t);
+                        change = true;
+                    }
+                }
+            }
+            // 2. merge
+            for(int r = board.size()-1; r >= 1; r--){
+                Tile current = board.tile(col, r);
+                int nextRow =  r-1;
+                Tile nextTile = board.tile(col, nextRow);
+                if( current == null || nextTile == null) {
+                    break;
+                }
+                if(current.value() == nextTile.value()){
+                    board.move(col, r, nextTile);
+                    score += current.value()*2;
+                    // 以防nextrow 的下一行还有，连续3 4 行
+                    for(int p = nextRow -1; p >= 0; p--) {
+                        Tile tt = board.tile(col, p);
+                        if (tt == null) {
+                            break;
+                        }
+                        // 将当前的tile移到上一个循环中合并的tile的位置，并且不能合并
+                        board.move(col, p + 1, tt);
+                    }
+                }
+                change = true;
+            }
+
+        }
+        board.setViewingPerspective(Side.NORTH);
         checkGameOver();
+
     }
 
 

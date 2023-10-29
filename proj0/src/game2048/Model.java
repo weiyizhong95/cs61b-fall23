@@ -120,7 +120,6 @@ public class Model {
                 }
             }
         }
-
         return false;
     }
 
@@ -167,15 +166,11 @@ public class Model {
     public void tilt(Side side) {
         // TODO: Modify this.board (and if applicable, this.score) to account
         // for the tilt to the Side SIDE.
-        boolean change = false;
         board.setViewingPerspective(side);
-
-
         for(int col = 0; col <= board.size()-1; col++){
             // 1. move non-empty tile in order
             //  [x,2,2,x] --> [2,2,x,x]
             // note: find the null tile where there is a non-null tile in the next row
-
             for(int row = board.size()-1; row>=0; row--){
                 Tile t = board.tile(col, row);
                 if(t != null) {
@@ -186,10 +181,8 @@ public class Model {
                         }
                         nextPosition--;
                     }
-
                     if (nextPosition >= row) {
                         board.move(col, nextPosition, t);
-                        change = true;
                     }
                 }
             }
@@ -214,13 +207,10 @@ public class Model {
                         board.move(col, p + 1, tt);
                     }
                 }
-                change = true;
             }
-
         }
         board.setViewingPerspective(Side.NORTH);
         checkGameOver();
-
     }
 
 
